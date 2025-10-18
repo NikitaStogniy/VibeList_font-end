@@ -1,0 +1,221 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "follow": "Follow",
+    "following": "Following",
+    "goBack": "Go Back"
+  },
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "settings": "Settings",
+    "addItem": "Add item"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "createAccount": "Create Account",
+    "loginSubtitle": "Sign in to continue to your wishlist",
+    "registerSubtitle": "Join VibeList and start sharing your wishes",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "username": "Username",
+    "usernamePlaceholder": "johndoe",
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "John Doe",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "login": "Log In",
+    "register": "Sign Up",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordRequired": "Password is required",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordLowercase": "Password must contain a lowercase letter",
+    "passwordUppercase": "Password must contain an uppercase letter",
+    "passwordDigit": "Password must contain a digit",
+    "confirmPasswordRequired": "Please confirm your password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "usernameRequired": "Username is required",
+    "usernameTooShort": "Username must be at least 3 characters",
+    "usernameTooLong": "Username cannot exceed 20 characters",
+    "usernameInvalid": "Username can only contain letters, numbers, and underscores",
+    "displayNameRequired": "Display name is required",
+    "displayNameTooShort": "Display name must be at least 2 characters",
+    "loginFailed": "Login failed. Please check your credentials.",
+    "registerFailed": "Registration failed. Please try again.",
+    "error": "Error"
+  },
+  "home": {
+    "title": "Your Feed",
+    "itemsCount": "{{count}} items from people you follow",
+    "itemsCount_one": "{{count}} item from people you follow",
+    "itemsCount_zero": "No items from people you follow",
+    "loadingFeed": "Loading your feed...",
+    "errorLoadingFeed": "Error loading feed",
+    "reserve": "Reserve",
+    "unreserve": "Unreserve",
+    "reserved": "Reserved",
+    "alreadyReserved": "Item already reserved",
+    "reserveSuccess": "Item reserved successfully!",
+    "unreserveSuccess": "Item unreserved successfully!",
+    "emptyStateTitle": "No items yet",
+    "emptyStateMessage": "Follow some users to see their wishlist items here!"
+  },
+  "explore": {
+    "searchPlaceholder": "Search for users...",
+    "title": "Explore",
+    "searching": "Searching...",
+    "searchPrompt": "Search for users to follow",
+    "noResults": "No users found",
+    "description": "This app includes example code to help you get started.",
+    "fileBasedRouting": {
+      "title": "File-based routing",
+      "text1": "This app has two screens:",
+      "text2": "The layout file in",
+      "text3": "sets up the tab navigator.",
+      "learnMore": "Learn more"
+    },
+    "platformSupport": {
+      "title": "Android, iOS, and web support",
+      "text": "You can open this project on Android, iOS, and the web. To open the web version, press",
+      "keyW": "w",
+      "text2": "in the terminal running this project."
+    },
+    "images": {
+      "title": "Images",
+      "text1": "For static images, you can use the",
+      "text2": "and",
+      "text3": "suffixes to provide files for different screen densities"
+    },
+    "darkMode": {
+      "title": "Light and dark mode components",
+      "text1": "This template has light and dark mode support. The",
+      "text2": "hook lets you inspect what the user's current color scheme is, and so you can adjust UI colors accordingly."
+    },
+    "animations": {
+      "title": "Animations",
+      "text1": "This template includes an example of an animated component. The",
+      "text2": "component uses the powerful",
+      "text3": "library to create a waving hand animation.",
+      "text4": "The",
+      "text5": "component provides a parallax effect for the header image."
+    }
+  },
+  "addItem": {
+    "title": "Add Wishlist Item",
+    "pasteLink": "Paste Link",
+    "manualEntry": "Manual Entry",
+    "pasteFromClipboard": "Paste from Clipboard",
+    "uploadPhoto": "Upload Photo",
+    "changePhoto": "Change Photo",
+    "name": "Item Name",
+    "namePlaceholder": "Enter item name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter item description",
+    "price": "Price",
+    "pricePlaceholder": "0.00",
+    "currency": "Currency",
+    "link": "Link",
+    "linkPlaceholder": "https://example.com/product",
+    "image": "Image URL",
+    "imagePlaceholder": "https://...",
+    "submit": "Add to Wishlist",
+    "submitting": "Adding...",
+    "cancel": "Cancel",
+    "back": "Back",
+    "clipboardEmpty": "Clipboard is empty",
+    "clipboardFailed": "Failed to read from clipboard",
+    "permissionRequired": "Permission to access camera roll is required",
+    "imageFailed": "Failed to pick image",
+    "linkRequired": "Please enter a link",
+    "nameRequired": "Please enter item name",
+    "submitSuccess": "Item added successfully!",
+    "submitFailed": "Failed to add item. Please try again.",
+    "currencies": {
+      "rub": "RUB",
+      "usd": "USD",
+      "eur": "EUR"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "emptyStateTitle": "No notifications yet",
+    "emptyStateMessage": "When someone reserves your items or follows you, you'll see it here!"
+  },
+  "profile": {
+    "title": "Profile",
+    "wishlist": "Wishlist",
+    "settings": "Settings",
+    "logout": "Logout",
+    "followers": "Followers",
+    "following": "Following",
+    "errorLoadingUser": "Error loading user profile",
+    "emptyWishlist": "No items in wishlist yet"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "description": "Select your preferred language"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto (System)"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "push": "Push Notifications",
+      "pushDescription": "Receive notifications about activity on your wishlist",
+      "email": "Email Notifications",
+      "emailDescription": "Receive email updates about your wishlist"
+    },
+    "about": {
+      "title": "About",
+      "version": "Version"
+    },
+    "danger": {
+      "title": "Danger Zone",
+      "logout": "Log Out",
+      "loggingOut": "Logging out...",
+      "logoutConfirm": {
+        "title": "Log Out",
+        "message": "Are you sure you want to log out?",
+        "cancel": "Cancel",
+        "confirm": "Log Out"
+      }
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You need to be logged in to perform this action",
+    "notFound": "Not found",
+    "reservationFailed": "Failed to toggle reservation"
+  },
+  "actions": {
+    "add": "Add",
+    "update": "Update",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "submit": "Submit"
+  }
+}

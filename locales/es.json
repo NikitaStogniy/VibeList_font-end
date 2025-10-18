@@ -1,0 +1,208 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar"
+  },
+  "tabs": {
+    "home": "Inicio",
+    "search": "Buscar",
+    "notifications": "Notificaciones",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "addItem": "Agregar"
+  },
+  "auth": {
+    "welcomeBack": "Bienvenido de nuevo",
+    "createAccount": "Crear cuenta",
+    "loginSubtitle": "Inicia sesión para continuar",
+    "registerSubtitle": "Únete a VibeList y comparte tus deseos",
+    "email": "Email",
+    "emailPlaceholder": "tu@email.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "username": "Nombre de usuario",
+    "usernamePlaceholder": "johndoe",
+    "displayName": "Nombre para mostrar",
+    "displayNamePlaceholder": "Juan Pérez",
+    "confirmPassword": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Vuelve a ingresar tu contraseña",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "noAccount": "¿No tienes cuenta?",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "emailRequired": "El email es obligatorio",
+    "emailInvalid": "Por favor ingresa un email válido",
+    "passwordRequired": "La contraseña es obligatoria",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+    "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+    "passwordLowercase": "La contraseña debe contener una letra minúscula",
+    "passwordUppercase": "La contraseña debe contener una letra mayúscula",
+    "passwordDigit": "La contraseña debe contener un dígito",
+    "confirmPasswordRequired": "Por favor confirma tu contraseña",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "usernameRequired": "El nombre de usuario es obligatorio",
+    "usernameTooShort": "El nombre de usuario debe tener al menos 3 caracteres",
+    "usernameTooLong": "El nombre de usuario no puede exceder 20 caracteres",
+    "usernameInvalid": "El nombre de usuario solo puede contener letras, números y guiones bajos",
+    "displayNameRequired": "El nombre para mostrar es obligatorio",
+    "displayNameTooShort": "El nombre para mostrar debe tener al menos 2 caracteres",
+    "loginFailed": "Error al iniciar sesión. Verifica tus credenciales.",
+    "registerFailed": "Error al registrarse. Inténtalo de nuevo.",
+    "error": "Error"
+  },
+  "home": {
+    "title": "Tu Feed",
+    "itemsCount": "{{count}} artículos de personas que sigues",
+    "itemsCount_one": "{{count}} artículo de personas que sigues",
+    "itemsCount_zero": "No hay artículos de personas que sigues",
+    "loadingFeed": "Cargando tu feed...",
+    "errorLoadingFeed": "Error al cargar el feed",
+    "reserve": "Reservar",
+    "unreserve": "Cancelar reserva",
+    "alreadyReserved": "Ya está reservado",
+    "emptyStateTitle": "Aún no hay artículos",
+    "emptyStateMessage": "¡Sigue a algunos usuarios para ver sus artículos de lista de deseos aquí!"
+  },
+  "explore": {
+    "searchPlaceholder": "Buscar usuarios...",
+    "title": "Explorar",
+    "searching": "Buscando...",
+    "searchPrompt": "Busca usuarios para seguir",
+    "noResults": "No se encontraron usuarios",
+    "description": "Esta aplicación incluye código de ejemplo para ayudarte a comenzar.",
+    "fileBasedRouting": {
+      "title": "Enrutamiento basado en archivos",
+      "text1": "Esta aplicación tiene dos pantallas:",
+      "text2": "El archivo de diseño en",
+      "text3": "configura el navegador de pestañas.",
+      "learnMore": "Aprende más"
+    },
+    "platformSupport": {
+      "title": "Soporte para Android, iOS y web",
+      "text": "Puedes abrir este proyecto en Android, iOS y web. Para abrir la versión web, presiona",
+      "keyW": "w",
+      "text2": "en la terminal que ejecuta este proyecto."
+    },
+    "images": {
+      "title": "Imágenes",
+      "text1": "Para imágenes estáticas, puedes usar los sufijos",
+      "text2": "y",
+      "text3": "para proporcionar archivos para diferentes densidades de pantalla"
+    },
+    "darkMode": {
+      "title": "Componentes de modo claro y oscuro",
+      "text1": "Esta plantilla tiene soporte para modo claro y oscuro. El hook",
+      "text2": "te permite inspeccionar el esquema de color actual del usuario, para que puedas ajustar los colores de la UI en consecuencia."
+    },
+    "animations": {
+      "title": "Animaciones",
+      "text1": "Esta plantilla incluye un ejemplo de un componente animado. El componente",
+      "text2": "usa la poderosa biblioteca",
+      "text3": "para crear una animación de saludo con la mano.",
+      "text4": "El componente",
+      "text5": "proporciona un efecto de paralaje para la imagen del encabezado."
+    }
+  },
+  "addItem": {
+    "title": "Agregar artículo a la lista de deseos",
+    "pasteLink": "Pegar enlace",
+    "manualEntry": "Entrada manual",
+    "pasteFromClipboard": "Pegar desde portapapeles",
+    "uploadPhoto": "Subir foto",
+    "changePhoto": "Cambiar foto",
+    "name": "Nombre del artículo",
+    "namePlaceholder": "Ingresa el nombre del artículo",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Ingresa la descripción del artículo",
+    "price": "Precio",
+    "pricePlaceholder": "0.00",
+    "currency": "Moneda",
+    "link": "Enlace",
+    "linkPlaceholder": "https://ejemplo.com/producto",
+    "image": "URL de imagen",
+    "imagePlaceholder": "https://...",
+    "submit": "Agregar a la lista de deseos",
+    "cancel": "Cancelar",
+    "back": "Atrás",
+    "clipboardEmpty": "El portapapeles está vacío",
+    "clipboardFailed": "Error al leer del portapapeles",
+    "permissionRequired": "Se requiere permiso para acceder a la galería de fotos",
+    "imageFailed": "Error al seleccionar imagen",
+    "linkRequired": "Por favor ingresa un enlace",
+    "nameRequired": "Por favor ingresa el nombre del artículo",
+    "submitSuccess": "Artículo agregado exitosamente",
+    "currencies": {
+      "rub": "RUB",
+      "usd": "USD",
+      "eur": "EUR"
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllAsRead": "Marcar todas como leídas",
+    "emptyStateTitle": "Aún no hay notificaciones",
+    "emptyStateMessage": "¡Cuando alguien reserve tus artículos o te siga, lo verás aquí!"
+  },
+  "profile": {
+    "title": "Perfil",
+    "wishlist": "Mi lista de deseos",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": {
+      "title": "Idioma",
+      "description": "Selecciona tu idioma preferido"
+    },
+    "theme": {
+      "title": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "auto": "Auto (Sistema)"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "push": "Notificaciones Push",
+      "pushDescription": "Recibe notificaciones sobre actividad en tu lista de deseos",
+      "email": "Notificaciones por Email",
+      "emailDescription": "Recibe actualizaciones por email sobre tu lista de deseos"
+    },
+    "about": {
+      "title": "Acerca de",
+      "version": "Versión"
+    },
+    "danger": {
+      "title": "Zona de Peligro",
+      "logout": "Cerrar Sesión",
+      "loggingOut": "Cerrando sesión...",
+      "logoutConfirm": {
+        "title": "Cerrar Sesión",
+        "message": "¿Estás seguro de que quieres cerrar sesión?",
+        "cancel": "Cancelar",
+        "confirm": "Cerrar Sesión"
+      }
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal",
+    "network": "Error de red. Por favor, verifica tu conexión.",
+    "unauthorized": "Debes iniciar sesión para realizar esta acción",
+    "notFound": "No encontrado",
+    "reservationFailed": "Error al cambiar la reserva"
+  },
+  "actions": {
+    "add": "Agregar",
+    "update": "Actualizar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "submit": "Enviar"
+  }
+}

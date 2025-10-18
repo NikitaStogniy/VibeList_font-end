@@ -4,6 +4,8 @@
  */
 
 import { Platform } from 'react-native';
+import { DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultTheme } from '@react-navigation/native';
+import type { Theme } from '@react-navigation/native';
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
@@ -24,6 +26,33 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+  },
+};
+
+// Custom React Navigation themes that match our color scheme
+export const LightTheme: Theme = {
+  ...NavigationDefaultTheme,
+  colors: {
+    ...NavigationDefaultTheme.colors,
+    primary: Colors.light.tint,
+    background: Colors.light.background,
+    card: Colors.light.background,
+    text: Colors.light.text,
+    border: '#E5E5E7',
+    notification: Colors.light.tint,
+  },
+};
+
+export const DarkTheme: Theme = {
+  ...NavigationDarkTheme,
+  colors: {
+    ...NavigationDarkTheme.colors,
+    primary: Colors.dark.tint,
+    background: Colors.dark.background,
+    card: Colors.dark.background,
+    text: Colors.dark.text,
+    border: '#272729',
+    notification: Colors.dark.tint,
   },
 };
 

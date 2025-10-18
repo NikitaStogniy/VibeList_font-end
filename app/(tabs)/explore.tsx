@@ -1,112 +1,181 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, TextInput, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { UserCard } from "@/components/user-card";
+import { useTranslation } from "@/hooks/use-translation";
+import { useState, useCallback, useEffect, memo } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSearchUsersQuery, useFollowUserMutation, useUnfollowUserMutation, useIsFollowingQuery } from "@/store/api";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import type { User } from "@/types/api";
+import { router } from "expo-router";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+// User card wrapper with follow state
+const UserCardWithFollowState = memo(({
+  user,
+  onPress,
+}: {
+  user: User;
+  onPress: (user: User) => void;
+}) => {
+  const { data: isFollowing = false } = useIsFollowingQuery(user.id);
+  const [followUser] = useFollowUserMutation();
+  const [unfollowUser] = useUnfollowUserMutation();
+
+  const handleFollowPress = useCallback(async (u: User) => {
+    try {
+      if (isFollowing) {
+        await unfollowUser(u.id).unwrap();
+      } else {
+        await followUser(u.id).unwrap();
+      }
+    } catch (error) {
+      console.error("Failed to toggle follow:", error);
+    }
+  }, [isFollowing, followUser, unfollowUser]);
+
+  return (
+    <UserCard
+      user={user}
+      onPress={onPress}
+      showFollowButton={true}
+      isFollowing={isFollowing}
+      onFollowPress={handleFollowPress}
+    />
+  );
+});
 
 export default function TabTwoScreen() {
+  const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const iconColor = useThemeColor({}, "icon");
+  const textColor = useThemeColor({}, "text");
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch users based on search query
+  const { data, isLoading, isFetching } = useSearchUsersQuery(
+    { query: debouncedQuery, limit: 50 },
+    { skip: debouncedQuery.length === 0 }
+  );
+
+  // Handle user card press
+  const handleUserPress = useCallback((user: User) => {
+    router.push(`/user/${user.id}`);
+  }, []);
+
+  // Render individual user card with follow state
+  const renderUser = useCallback(
+    ({ item }: { item: User }) => {
+      return (
+        <UserCardWithFollowState
+          user={item}
+          onPress={handleUserPress}
+        />
+      );
+    },
+    [handleUserPress]
+  );
+
+  // Extract key for each user
+  const keyExtractor = useCallback((user: User) => user.id, []);
+
+  // Empty state
+  const renderEmptyComponent = useCallback(() => {
+    if (isLoading || isFetching) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ThemedText style={styles.emptyText}>
+            {t("explore.searching")}
+          </ThemedText>
+        </View>
+      );
+    }
+
+    if (debouncedQuery.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ThemedText style={styles.emptyText}>
+            {t("explore.searchPrompt")}
+          </ThemedText>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <ThemedText style={styles.emptyText}>
+          {t("explore.noResults")}
+        </ThemedText>
+      </View>
+    );
+  }, [isLoading, isFetching, debouncedQuery, t]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title">{t("explore.title")}</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
+      <ThemedView style={styles.searchContainer}>
+        <TextInput
+          style={[styles.input, { borderColor: iconColor, color: textColor }]}
+          placeholder={t("explore.searchPlaceholder")}
+          placeholderTextColor={iconColor}
+          onChangeText={setSearchQuery}
+          value={searchQuery}
         />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </ThemedView>
+      <FlashList
+        data={data?.users || []}
+        renderItem={renderUser}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={renderEmptyComponent}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  header: {
+    padding: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+  },
+  input: {
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    fontSize: 16,
+  },
+  listContent: {
+    paddingTop: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 16,
+    opacity: 0.6,
+    textAlign: "center",
   },
 });

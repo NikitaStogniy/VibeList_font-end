@@ -1,0 +1,208 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "retry": "Повторить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Изменить",
+    "close": "Закрыть",
+    "follow": "Подписаться",
+    "following": "Подписан",
+    "goBack": "Назад"
+  },
+  "tabs": {
+    "home": "Главная",
+    "search": "Поиск",
+    "notifications": "Уведомления",
+    "profile": "Профиль",
+    "settings": "Настройки",
+    "addItem": "Добавить"
+  },
+  "auth": {
+    "welcomeBack": "С возвращением",
+    "createAccount": "Создать аккаунт",
+    "loginSubtitle": "Войдите, чтобы продолжить",
+    "registerSubtitle": "Присоединяйтесь к VibeList и делитесь желаниями",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "username": "Имя пользователя",
+    "usernamePlaceholder": "johndoe",
+    "displayName": "Отображаемое имя",
+    "displayNamePlaceholder": "Иван Иванов",
+    "confirmPassword": "Подтвердите пароль",
+    "confirmPasswordPlaceholder": "Введите пароль ещё раз",
+    "login": "Войти",
+    "register": "Зарегистрироваться",
+    "noAccount": "Нет аккаунта?",
+    "haveAccount": "Уже есть аккаунт?",
+    "emailRequired": "Email обязателен",
+    "emailInvalid": "Введите корректный email",
+    "passwordRequired": "Пароль обязателен",
+    "passwordTooShort": "Пароль должен быть минимум 6 символов",
+    "passwordMinLength": "Пароль должен быть минимум 8 символов",
+    "passwordLowercase": "Пароль должен содержать строчную букву",
+    "passwordUppercase": "Пароль должен содержать заглавную букву",
+    "passwordDigit": "Пароль должен содержать цифру",
+    "confirmPasswordRequired": "Подтвердите пароль",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "usernameRequired": "Имя пользователя обязательно",
+    "usernameTooShort": "Имя пользователя должно быть минимум 3 символа",
+    "usernameTooLong": "Имя пользователя не может превышать 20 символов",
+    "usernameInvalid": "Имя пользователя может содержать только буквы, цифры и подчёркивания",
+    "displayNameRequired": "Отображаемое имя обязательно",
+    "displayNameTooShort": "Отображаемое имя должно быть минимум 2 символа",
+    "loginFailed": "Ошибка входа. Проверьте данные.",
+    "registerFailed": "Ошибка регистрации. Попробуйте снова.",
+    "error": "Ошибка"
+  },
+  "home": {
+    "title": "Ваша лента",
+    "itemsCount": "{{count}} товаров от тех, на кого вы подписаны",
+    "itemsCount_one": "{{count}} товар от тех, на кого вы подписаны",
+    "itemsCount_zero": "Нет товаров от тех, на кого вы подписаны",
+    "loadingFeed": "Загрузка ленты...",
+    "errorLoadingFeed": "Ошибка загрузки ленты",
+    "reserve": "Зарезервировать",
+    "unreserve": "Отменить резерв",
+    "reserved": "Зарезервировано",
+    "alreadyReserved": "Уже зарезервировано",
+    "emptyStateTitle": "Пока нет товаров",
+    "emptyStateMessage": "Подпишитесь на пользователей, чтобы видеть их желания здесь!"
+  },
+  "explore": {
+    "title": "Поиск",
+    "searchPlaceholder": "Искать пользователей...",
+    "searching": "Поиск...",
+    "searchPrompt": "Найдите пользователей для подписки",
+    "noResults": "Пользователи не найдены",
+    "description": "Это приложение включает примеры кода, чтобы помочь вам начать.",
+    "fileBasedRouting": {
+      "title": "Маршрутизация на основе файлов",
+      "text1": "В этом приложении два экрана:",
+      "text2": "Файл макета в",
+      "text3": "настраивает навигацию по вкладкам.",
+      "learnMore": "Узнать больше"
+    },
+    "platformSupport": {
+      "title": "Поддержка Android, iOS и веб",
+      "text": "Вы можете открыть этот проект на Android, iOS и в веб. Чтобы открыть веб-версию, нажмите",
+      "keyW": "w",
+      "text2": "в терминале, где запущен проект."
+    },
+    "images": {
+      "title": "Изображения",
+      "text1": "Для статических изображений вы можете использовать суффиксы",
+      "text2": "и",
+      "text3": "для предоставления файлов для разных плотностей экрана"
+    },
+    "darkMode": {
+      "title": "Компоненты светлой и тёмной темы",
+      "text1": "Этот шаблон поддерживает светлую и тёмную темы.",
+      "text2": "хук позволяет определить текущую цветовую схему пользователя и соответственно настроить цвета интерфейса."
+    },
+    "animations": {
+      "title": "Анимации",
+      "text1": "Этот шаблон включает пример анимированного компонента.",
+      "text2": "компонент использует мощную библиотеку",
+      "text3": "для создания анимации машущей руки.",
+      "text4": "",
+      "text5": "компонент обеспечивает эффект параллакса для изображения заголовка."
+    }
+  },
+  "addItem": {
+    "title": "Добавить желание",
+    "pasteLink": "Вставить ссылку",
+    "manualEntry": "Ручной ввод",
+    "pasteFromClipboard": "Вставить из буфера",
+    "uploadPhoto": "Загрузить фото",
+    "name": "Название",
+    "namePlaceholder": "Введите название",
+    "description": "Описание",
+    "descriptionPlaceholder": "Введите описание",
+    "price": "Цена",
+    "pricePlaceholder": "0.00",
+    "currency": "Валюта",
+    "link": "Ссылка",
+    "linkPlaceholder": "https://example.com/product",
+    "image": "URL изображения",
+    "imagePlaceholder": "https://...",
+    "submit": "Добавить в вишлист",
+    "cancel": "Отмена",
+    "back": "Назад",
+    "currencies": {
+      "rub": "₽",
+      "usd": "$",
+      "eur": "€"
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "markAllAsRead": "Отметить все как прочитанные",
+    "emptyStateTitle": "Пока нет уведомлений",
+    "emptyStateMessage": "Когда кто-то зарезервирует ваш товар или подпишется на вас, вы увидите это здесь!"
+  },
+  "profile": {
+    "title": "Профиль",
+    "wishlist": "Вишлист",
+    "settings": "Настройки",
+    "logout": "Выйти",
+    "followers": "Подписчики",
+    "following": "Подписки",
+    "errorLoadingUser": "Ошибка загрузки профиля",
+    "emptyWishlist": "Пока нет желаний в списке"
+  },
+  "settings": {
+    "title": "Настройки",
+    "language": {
+      "title": "Язык",
+      "description": "Выберите предпочитаемый язык"
+    },
+    "theme": {
+      "title": "Тема",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "auto": "Авто (системная)"
+    },
+    "notifications": {
+      "title": "Уведомления",
+      "push": "Push-уведомления",
+      "pushDescription": "Получать уведомления об активности в вашем вишлисте",
+      "email": "Email-уведомления",
+      "emailDescription": "Получать email-рассылку о вашем вишлисте"
+    },
+    "about": {
+      "title": "О приложении",
+      "version": "Версия"
+    },
+    "danger": {
+      "title": "Опасная зона",
+      "logout": "Выйти",
+      "loggingOut": "Выход...",
+      "logoutConfirm": {
+        "title": "Выход",
+        "message": "Вы уверены, что хотите выйти?",
+        "cancel": "Отмена",
+        "confirm": "Выйти"
+      }
+    }
+  },
+  "errors": {
+    "generic": "Что-то пошло не так",
+    "network": "Ошибка сети. Проверьте подключение.",
+    "unauthorized": "Вы должны войти, чтобы выполнить это действие",
+    "notFound": "Не найдено",
+    "reservationFailed": "Не удалось изменить резерв"
+  },
+  "actions": {
+    "add": "Добавить",
+    "update": "Обновить",
+    "delete": "Удалить",
+    "confirm": "Подтвердить",
+    "cancel": "Отмена",
+    "submit": "Отправить"
+  }
+}
