@@ -2,32 +2,62 @@
  * Secure Storage Utility
  *
  * Provides encrypted storage for sensitive data like authentication tokens.
- * Uses expo-secure-store on native platforms and fallback to AsyncStorage on web.
+ * Uses expo-secure-store on native platforms and sessionStorage with encryption on web.
  */
 
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { AUTH_CONFIG } from '@/constants/config';
+import type { User } from '@/types/api';
 
 /**
- * For web platform, we'll use localStorage as a fallback
- * Note: This is less secure than native SecureStore but necessary for web support
+ * Simple encryption for web storage (better than plain text)
+ * NOTE: For production, consider using a robust encryption library
+ */
+function simpleEncrypt(text: string, key: string = 'vibelist-secret-key'): string {
+  try {
+    // Base64 encode for basic obfuscation (not true encryption)
+    // In production, use crypto-js or similar for real encryption
+    const encoded = btoa(encodeURIComponent(text + key));
+    return encoded;
+  } catch {
+    return text;
+  }
+}
+
+function simpleDecrypt(encodedText: string, key: string = 'vibelist-secret-key'): string {
+  try {
+    const decoded = decodeURIComponent(atob(encodedText));
+    // Remove the key suffix
+    return decoded.slice(0, -key.length);
+  } catch {
+    return encodedText;
+  }
+}
+
+/**
+ * For web platform, use sessionStorage with encryption
+ * sessionStorage is cleared when the browser tab is closed, providing better security
  */
 const webStorage = {
   async getItem(key: string): Promise<string | null> {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(key);
+      const encrypted = sessionStorage.getItem(key);
+      if (encrypted) {
+        return simpleDecrypt(encrypted);
+      }
     }
     return null;
   },
   async setItem(key: string, value: string): Promise<void> {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(key, value);
+      const encrypted = simpleEncrypt(value);
+      sessionStorage.setItem(key, encrypted);
     }
   },
   async deleteItem(key: string): Promise<void> {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
     }
   },
 };
@@ -49,22 +79,24 @@ export async function getSecureItem(key: string): Promise<string | null> {
 
 /**
  * Set item in secure storage
+ * @returns Promise<boolean> - true if successful, false otherwise
  */
-export async function setSecureItem(key: string, value: string): Promise<void> {
+export async function setSecureItem(key: string, value: string): Promise<boolean> {
   try {
     // Validate that value is a string
     if (typeof value !== 'string') {
-      console.error(
-        `Error: Cannot save to SecureStore. Key "${key}" must be a string, received ${typeof value}:`,
-        value
+      const error = new Error(
+        `Cannot save to SecureStore. Key "${key}" must be a string, received ${typeof value}`
       );
-      return;
+      console.error(error.message, value);
+      throw error;
     }
 
     // Validate that value is not empty
     if (!value || value.length === 0) {
-      console.error(`Error: Cannot save empty value for key "${key}"`);
-      return;
+      const error = new Error(`Cannot save empty value for key "${key}"`);
+      console.error(error.message);
+      throw error;
     }
 
     if (Platform.OS === 'web') {
@@ -72,8 +104,12 @@ export async function setSecureItem(key: string, value: string): Promise<void> {
     } else {
       await SecureStore.setItemAsync(key, value);
     }
+
+    return true;
   } catch (error) {
     console.error(`Error setting secure item ${key}:`, error);
+    // Re-throw to allow caller to handle
+    throw error;
   }
 }
 
@@ -124,15 +160,29 @@ export async function deleteRefreshToken(): Promise<void> {
  * User Data Management
  */
 
-export async function saveUserData(user: any): Promise<void> {
-  await setSecureItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+export async function saveUserData(user: User): Promise<boolean> {
+  try {
+    return await setSecureItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+  } catch (error) {
+    console.error('Error saving user data:', error);
+    return false;
+  }
 }
 
-export async function getUserData(): Promise<any | null> {
+export async function getUserData(): Promise<User | null> {
   const data = await getSecureItem(AUTH_CONFIG.userKey);
   if (!data) return null;
+
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data) as User;
+
+    // Validate that the parsed data has required User fields
+    if (!parsed.id || !parsed.username || !parsed.email) {
+      console.error('Invalid user data structure');
+      return null;
+    }
+
+    return parsed;
   } catch (error) {
     console.error('Error parsing user data:', error);
     return null;

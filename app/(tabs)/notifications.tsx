@@ -16,6 +16,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { NotificationType } from "@/types/api";
+import { PriceDropNotification } from "@/components/price-drop-notification";
 
 export default function NotificationsScreen() {
   const colorScheme = useColorScheme();
@@ -83,42 +85,51 @@ export default function NotificationsScreen() {
               handleNotificationPress(notification.id, notification.isRead)
             }
           >
-            <ThemedView
-              style={[
-                styles.notificationCard,
-                !notification.isRead && styles.unreadCard,
-              ]}
-            >
-              <View style={styles.notificationContent}>
-                {notification.actorAvatarUrl && (
-                  <Image
-                    source={{ uri: notification.actorAvatarUrl }}
-                    style={styles.avatar}
-                    contentFit="cover"
-                  />
-                )}
-                <View style={styles.textContent}>
-                  <ThemedText style={styles.message}>
-                    {notification.message}
-                  </ThemedText>
-                  <ThemedText style={styles.timestamp}>
-                    {new Date(notification.createdAt).toLocaleDateString()} at{" "}
-                    {new Date(notification.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </ThemedText>
+            {/* Price Drop Notification - Special UI */}
+            {notification.type === NotificationType.PRICE_DROP ? (
+              <PriceDropNotification
+                notification={notification}
+                isUnread={!notification.isRead}
+              />
+            ) : (
+              /* Regular Notification */
+              <ThemedView
+                style={[
+                  styles.notificationCard,
+                  !notification.isRead && styles.unreadCard,
+                ]}
+              >
+                <View style={styles.notificationContent}>
+                  {notification.actorAvatarUrl && (
+                    <Image
+                      source={{ uri: notification.actorAvatarUrl }}
+                      style={styles.avatar}
+                      contentFit="cover"
+                    />
+                  )}
+                  <View style={styles.textContent}>
+                    <ThemedText style={styles.message}>
+                      {notification.message}
+                    </ThemedText>
+                    <ThemedText style={styles.timestamp}>
+                      {new Date(notification.createdAt).toLocaleDateString()} at{" "}
+                      {new Date(notification.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </ThemedText>
+                  </View>
+                  {!notification.isRead && (
+                    <View
+                      style={[
+                        styles.unreadDot,
+                        { backgroundColor: Colors[colorScheme ?? "light"].tint },
+                      ]}
+                    />
+                  )}
                 </View>
-                {!notification.isRead && (
-                  <View
-                    style={[
-                      styles.unreadDot,
-                      { backgroundColor: Colors[colorScheme ?? "light"].tint },
-                    ]}
-                  />
-                )}
-              </View>
-            </ThemedView>
+              </ThemedView>
+            )}
           </TouchableOpacity>
         ))}
 

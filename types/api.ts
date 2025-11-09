@@ -17,7 +17,7 @@ export interface User {
 export interface WishlistItem {
   id: string;
   userId: string; // Owner of the item
-  name: string;
+  name?: string; // Optional - can be filled after URL parsing
   description?: string;
   price?: number;
   currency?: string; // e.g., "USD", "EUR"
@@ -28,6 +28,10 @@ export interface WishlistItem {
   reservedBy?: string; // userId who reserved it
   reservedAt?: string; // ISO date string
   priority?: ItemPriority;
+  // URL parsing and price monitoring fields
+  parsingEnabled?: boolean; // If true, price is monitored for changes
+  lastParsedAt?: string; // ISO date string - last price check
+  parsingFailedCount?: number; // Number of failed parsing attempts
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
@@ -51,6 +55,12 @@ export interface Notification {
   message: string;
   isRead: boolean;
   createdAt: string; // ISO date string
+  // Price drop specific fields
+  oldPrice?: number;
+  newPrice?: number;
+  currency?: string;
+  discountPercent?: number;
+  ownerId?: string; // Owner of the item for price drop notifications
 }
 
 export interface FeedItem {
@@ -75,6 +85,7 @@ export enum NotificationType {
   ITEM_RESERVED = 'item_reserved',
   ITEM_UNRESERVED = 'item_unreserved',
   NEW_ITEM = 'new_item',
+  PRICE_DROP = 'price_drop',
 }
 
 // ============================================================================
@@ -98,6 +109,15 @@ export interface AuthResponse {
   user: User;
   token: string;
   refreshToken?: string; // JWT refresh token for token renewal
+}
+
+export interface AppleAuthRequest {
+  identityToken: string;
+  user?: string; // Optional JSON string with firstName and lastName, only on first sign-in
+}
+
+export interface GoogleAuthRequest {
+  idToken: string;
 }
 
 export interface RefreshTokenRequest {
@@ -130,7 +150,7 @@ export interface SearchUsersResponse {
 
 // Wishlist Items
 export interface CreateItemRequest {
-  name: string;
+  name?: string; // Optional when productUrl is provided
   description?: string;
   price?: number;
   currency?: string;
@@ -138,6 +158,11 @@ export interface CreateItemRequest {
   imageUrl?: string;
   priority?: ItemPriority;
   isPublic?: boolean; // Whether the item is visible to others (default: true)
+}
+
+export interface CreateItemResponse {
+  item: WishlistItem;
+  warnings?: string[]; // List of fields that couldn't be parsed
 }
 
 export interface UpdateItemRequest {

@@ -1,8 +1,8 @@
-import { useTranslation } from "@/hooks/use-translation";
-import React from "react";
-import { StyleSheet, Text, View, Pressable } from "react-native";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/hooks/use-translation";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface MenuViewProps {
   onSelectPasteLink: () => void;
@@ -18,8 +18,10 @@ export function MenuView({
   const colors = Colors[colorScheme ?? "light"];
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.header, { color: colors.text }]}>{t("addItem.title")}</Text>
+    <View style={[styles.container, { backgroundColor: colors.modalBackground }]}>
+      <Text style={[styles.header, { color: colors.text }]}>
+        {t("addItem.title")}
+      </Text>
 
       <Pressable
         style={({ pressed }) => [
@@ -31,7 +33,9 @@ export function MenuView({
         ]}
         onPress={onSelectPasteLink}
       >
-        <Text style={styles.buttonText}>{t("addItem.pasteLink")}</Text>
+        <Text style={styles.buttonText}>
+          {t("addItem.pasteLink")}
+        </Text>
       </Pressable>
 
       <Pressable
@@ -44,7 +48,9 @@ export function MenuView({
         ]}
         onPress={onSelectManualEntry}
       >
-        <Text style={styles.buttonText}>{t("addItem.manualEntry")}</Text>
+        <Text style={styles.buttonText}>
+          {t("addItem.manualEntry")}
+        </Text>
       </Pressable>
     </View>
   );

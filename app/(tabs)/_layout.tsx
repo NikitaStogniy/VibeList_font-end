@@ -57,7 +57,7 @@ function TabsContent() {
         <Tabs.Screen
           name="add-item"
           options={{
-            title: "Add item",
+            title: t("tabs.addItem"),
             tabBarButton: (props) => (
               <Pressable
                 onPress={(e) => {

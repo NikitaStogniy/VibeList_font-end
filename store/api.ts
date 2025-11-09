@@ -13,12 +13,15 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  AppleAuthRequest,
+  GoogleAuthRequest,
   RefreshTokenRequest,
   RefreshTokenResponse,
   UpdateProfileRequest,
   SearchUsersRequest,
   SearchUsersResponse,
   CreateItemRequest,
+  CreateItemResponse,
   UpdateItemRequest,
   GetFeedRequest,
   GetFeedResponse,
@@ -35,6 +38,7 @@ import {
   saveRefreshToken,
   clearAuthData,
 } from "@/utils/secureStorage";
+import { handleAuthError, updateAuthCredentials } from "@/utils/authHelpers";
 
 /**
  * Backend Response Wrapper
@@ -54,10 +58,13 @@ interface BackendResponse<T> {
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: Error) => void;
 }> = [];
 
-const processQueue = (error: any = null) => {
+// Timeout for token refresh (10 seconds)
+const REFRESH_TIMEOUT = 10000;
+
+const processQueue = (error: Error | null = null): void => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -100,12 +107,34 @@ const baseQueryWithTransform: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  // Wait if a refresh is already in progress
+  // Wait if a refresh is already in progress (with timeout)
   if (isRefreshing) {
     console.log("[API] Waiting for token refresh to complete...");
-    await new Promise((resolve, reject) => {
-      failedQueue.push({ resolve, reject });
-    });
+    try {
+      await Promise.race([
+        new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Token refresh timeout')),
+            REFRESH_TIMEOUT
+          )
+        ),
+      ]);
+    } catch (timeoutError) {
+      console.error('[API] Refresh timeout - clearing auth');
+      isRefreshing = false;
+      processQueue(new Error('Token refresh timeout'));
+      await handleAuthError(api.dispatch);
+      // Return error response
+      return {
+        error: {
+          status: 401,
+          data: { message: 'Authentication timeout' }
+        }
+      };
+    }
   }
 
   let result = await baseQuery(args, api, extraOptions);
@@ -134,10 +163,7 @@ const baseQueryWithTransform: BaseQueryFn<
     // If no refresh token available, logout immediately
     if (!currentRefreshToken) {
       console.log("[API] No refresh token available, logging out...");
-      // Dynamically import to avoid circular dependency
-      const { clearCredentials } = await import("./slices/authSlice");
-      api.dispatch(clearCredentials());
-      await clearAuthData();
+      await handleAuthError(api.dispatch);
       return result;
     }
 
@@ -159,67 +185,60 @@ const baseQueryWithTransform: BaseQueryFn<
           extraOptions
         );
 
-        if (refreshResult.data) {
-          // Unwrap the refresh response
-          let refreshData = refreshResult.data;
-          if (
-            refreshData &&
-            typeof refreshData === "object" &&
-            "data" in refreshData
-          ) {
-            const backendResponse = refreshData as BackendResponse<any>;
-            refreshData = backendResponse.data;
-          }
-
-          const { accessToken, refreshToken: newRefreshToken } =
-            refreshData as RefreshTokenResponse;
-
-          console.log("[API] Token refresh successful, updating tokens...");
-
-          // Save new tokens
-          await saveAuthToken(accessToken);
-          await saveRefreshToken(newRefreshToken);
-
-          // Update Redux state
-          const currentUser = state.auth.user;
-          if (currentUser) {
-            // Dynamically import to avoid circular dependency
-            const { setCredentials } = await import("./slices/authSlice");
-            api.dispatch(
-              setCredentials({
-                user: currentUser,
-                token: accessToken,
-                refreshToken: newRefreshToken,
-              })
-            );
-          }
-
-          // Process queued requests
-          processQueue();
-          isRefreshing = false;
-
-          // Retry the original request with new token
-          console.log("[API] Retrying original request with new token...");
-          result = await baseQuery(args, api, extraOptions);
-        } else {
-          // Refresh failed
-          console.log("[API] Token refresh failed, logging out...");
+        // Check if refresh failed with 401 or any other error
+        if (refreshResult.error || !refreshResult.data) {
+          console.log(
+            "[API] Token refresh failed:",
+            refreshResult.error?.status || "no data"
+          );
           processQueue(new Error("Token refresh failed"));
           isRefreshing = false;
-          // Dynamically import to avoid circular dependency
-          const { clearCredentials } = await import("./slices/authSlice");
-          api.dispatch(clearCredentials());
-          await clearAuthData();
+          await handleAuthError(api.dispatch);
           return result;
         }
+
+        // Unwrap the refresh response
+        let refreshData = refreshResult.data;
+        if (
+          refreshData &&
+          typeof refreshData === "object" &&
+          "data" in refreshData
+        ) {
+          const backendResponse = refreshData as BackendResponse<any>;
+          refreshData = backendResponse.data;
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } =
+          refreshData as RefreshTokenResponse;
+
+        console.log("[API] Token refresh successful, updating tokens...");
+
+        // Save new tokens
+        await saveAuthToken(accessToken);
+        await saveRefreshToken(newRefreshToken);
+
+        // Update Redux state
+        const currentUser = state.auth.user;
+        if (currentUser) {
+          await updateAuthCredentials(api.dispatch, {
+            user: currentUser,
+            token: accessToken,
+            refreshToken: newRefreshToken,
+          });
+        }
+
+        // Process queued requests
+        processQueue();
+        isRefreshing = false;
+
+        // Retry the original request with new token
+        console.log("[API] Retrying original request with new token...");
+        result = await baseQuery(args, api, extraOptions);
       } catch (error) {
         console.error("[API] Token refresh error:", error);
-        processQueue(error);
+        processQueue(error instanceof Error ? error : new Error('Unknown refresh error'));
         isRefreshing = false;
-        // Dynamically import to avoid circular dependency
-        const { clearCredentials } = await import("./slices/authSlice");
-        api.dispatch(clearCredentials());
-        await clearAuthData();
+        await handleAuthError(api.dispatch);
         return result;
       }
     }
@@ -267,6 +286,12 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithTransform,
   tagTypes: ["User", "Item", "Follow", "Notification", "Feed"],
+  // Enable automatic refetching
+  refetchOnMountOrArgChange: 30, // Refetch after 30 seconds
+  refetchOnFocus: true, // Refetch when window regains focus
+  refetchOnReconnect: true, // Refetch when network reconnects
+  // Keep unused data for 60 seconds
+  keepUnusedDataFor: 60,
   endpoints: (builder) => ({
     // ========================================================================
     // Auth Endpoints
@@ -287,6 +312,24 @@ export const api = createApi({
         body: data,
       }),
       invalidatesTags: ["User"],
+    }),
+
+    appleLogin: builder.mutation<AuthResponse, AppleAuthRequest>({
+      query: (data) => ({
+        url: "/auth/apple",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["User", "Feed"],
+    }),
+
+    googleLogin: builder.mutation<AuthResponse, GoogleAuthRequest>({
+      query: (data) => ({
+        url: "/auth/google",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["User", "Feed"],
     }),
 
     logout: builder.mutation<void, void>({
@@ -401,7 +444,7 @@ export const api = createApi({
       providesTags: (result, error, itemId) => [{ type: "Item", id: itemId }],
     }),
 
-    createItem: builder.mutation<WishlistItem, CreateItemRequest>({
+    createItem: builder.mutation<CreateItemResponse, CreateItemRequest>({
       query: (data) => ({
         url: "/wishlist",
         method: "POST",
@@ -539,6 +582,27 @@ export const api = createApi({
     }),
 
     // ========================================================================
+    // Device Tokens (Push Notifications)
+    // ========================================================================
+    registerDeviceToken: builder.mutation<
+      void,
+      { token: string; platform: 'ios' | 'android' }
+    >({
+      query: (params) => ({
+        url: "/device-tokens/register",
+        method: "POST",
+        body: params,
+      }),
+    }),
+
+    unregisterDeviceToken: builder.mutation<void, string>({
+      query: (token) => ({
+        url: `/device-tokens/${encodeURIComponent(token)}`,
+        method: "DELETE",
+      }),
+    }),
+
+    // ========================================================================
     // URL Parsing Endpoint
     // ========================================================================
     parseUrl: builder.mutation<ParseUrlResponse, ParseUrlRequest>({
@@ -556,6 +620,8 @@ export const {
   // Auth
   useLoginMutation,
   useRegisterMutation,
+  useAppleLoginMutation,
+  useGoogleLoginMutation,
   useLogoutMutation,
   useRefreshTokenMutation,
   useGetCurrentUserQuery,
@@ -583,6 +649,9 @@ export const {
   useGetNotificationsQuery,
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
+  // Device Tokens
+  useRegisterDeviceTokenMutation,
+  useUnregisterDeviceTokenMutation,
   // URL Parsing
   useParseUrlMutation,
 } = api;

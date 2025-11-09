@@ -141,6 +141,41 @@ const authSlice = createSlice({
         saveUserData(action.payload.user);
       }
     );
+    // Handle Apple login mutation
+    builder.addMatcher(
+      api.endpoints.appleLogin.matchFulfilled,
+      (state, action) => {
+        console.log('[AuthSlice] Apple Login - full payload:', JSON.stringify(action.payload, null, 2));
+        console.log('[AuthSlice] Apple Login - token types:', {
+          tokenType: typeof action.payload.token,
+          refreshTokenType: typeof action.payload.refreshToken,
+          userType: typeof action.payload.user,
+        });
+
+        // Validate that we have the required data
+        if (!action.payload.token || !action.payload.user) {
+          console.error('[AuthSlice] Apple Login - Missing required auth data!', {
+            hasToken: !!action.payload.token,
+            hasUser: !!action.payload.user,
+            payload: action.payload,
+          });
+          return;
+        }
+
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.refreshToken = action.payload.refreshToken || null;
+        state.isAuthenticated = true;
+        state.isLoading = false;
+
+        // Persist to secure storage
+        saveAuthToken(action.payload.token);
+        if (action.payload.refreshToken) {
+          saveRefreshToken(action.payload.refreshToken);
+        }
+        saveUserData(action.payload.user);
+      }
+    );
     // Handle logout mutation
     builder.addMatcher(
       api.endpoints.logout.matchFulfilled,

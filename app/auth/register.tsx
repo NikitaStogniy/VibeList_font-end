@@ -7,14 +7,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { AppleButton } from '@invertase/react-native-apple-authentication';
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRegisterMutation } from '@/store/api';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTranslation } from '@/hooks/use-translation';
+import { useAppleAuth } from '@/hooks/use-apple-auth';
+import { useGoogleAuth } from '@/hooks/use-google-auth';
 import { Colors } from '@/constants/theme';
 
 export default function RegisterScreen() {
@@ -34,6 +39,8 @@ export default function RegisterScreen() {
   const [serverError, setServerError] = useState('');
 
   const [register, { isLoading }] = useRegisterMutation();
+  const { signInWithApple, isLoading: isAppleLoading, error: appleError, isSupported: isAppleSupported } = useAppleAuth();
+  const { signInWithGoogle, isLoading: isGoogleLoading, error: googleError, isConfigured: isGoogleConfigured } = useGoogleAuth();
 
   const validateUsername = (username: string): boolean => {
     if (!username) {
@@ -182,6 +189,48 @@ export default function RegisterScreen() {
               </ThemedText>
             </ThemedView>
 
+            {(isAppleSupported || isGoogleConfigured) && (
+              <ThemedView style={styles.socialAuthContainer}>
+                {isAppleSupported && (
+                  <>
+                    <AppleButton
+                      buttonStyle={colorScheme === 'dark' ? AppleButton.Style.WHITE : AppleButton.Style.BLACK}
+                      buttonType={AppleButton.Type.SIGN_UP}
+                      style={styles.appleButton}
+                      onPress={signInWithApple}
+                      cornerRadius={12}
+                    />
+                    {appleError && (
+                      <ThemedView style={styles.serverErrorContainer}>
+                        <ThemedText style={styles.serverErrorText}>{appleError}</ThemedText>
+                      </ThemedView>
+                    )}
+                  </>
+                )}
+                {isGoogleConfigured && (
+                  <>
+                    <GoogleSigninButton
+                      size={GoogleSigninButton.Size.Wide}
+                      color={colorScheme === 'dark' ? GoogleSigninButton.Color.Light : GoogleSigninButton.Color.Dark}
+                      onPress={signInWithGoogle}
+                      disabled={isGoogleLoading || isAppleLoading || isLoading}
+                      style={styles.googleButton}
+                    />
+                    {googleError && (
+                      <ThemedView style={styles.serverErrorContainer}>
+                        <ThemedText style={styles.serverErrorText}>{googleError}</ThemedText>
+                      </ThemedView>
+                    )}
+                  </>
+                )}
+                <ThemedView style={styles.divider}>
+                  <View style={[styles.dividerLine, { backgroundColor: Colors[colorScheme ?? 'light'].tabIconDefault }]} />
+                  <ThemedText style={styles.dividerText}>or</ThemedText>
+                  <View style={[styles.dividerLine, { backgroundColor: Colors[colorScheme ?? 'light'].tabIconDefault }]} />
+                </ThemedView>
+              </ThemedView>
+            )}
+
             <ThemedView style={styles.form}>
               <ThemedView style={styles.inputContainer}>
                 <ThemedText type="defaultSemiBold" style={styles.label}>
@@ -211,7 +260,7 @@ export default function RegisterScreen() {
                   autoCorrect={false}
                   textContentType="username"
                   autoComplete="username"
-                  editable={!isLoading}
+                  editable={!isLoading && !isAppleLoading && !isGoogleLoading}
                 />
                 {usernameError ? (
                   <ThemedText style={styles.errorText}>{usernameError}</ThemedText>
@@ -245,7 +294,7 @@ export default function RegisterScreen() {
                   autoCorrect={false}
                   textContentType="name"
                   autoComplete="name"
-                  editable={!isLoading}
+                  editable={!isLoading && !isAppleLoading && !isGoogleLoading}
                 />
                 {displayNameError ? (
                   <ThemedText style={styles.errorText}>{displayNameError}</ThemedText>
@@ -281,7 +330,7 @@ export default function RegisterScreen() {
                   keyboardType="email-address"
                   textContentType="emailAddress"
                   autoComplete="email"
-                  editable={!isLoading}
+                  editable={!isLoading && !isAppleLoading && !isGoogleLoading}
                 />
                 {emailError ? (
                   <ThemedText style={styles.errorText}>{emailError}</ThemedText>
@@ -316,9 +365,9 @@ export default function RegisterScreen() {
                   }}
                   onBlur={() => validatePassword(password)}
                   secureTextEntry
-                  textContentType="newPassword"
-                  autoComplete="password-new"
-                  editable={!isLoading}
+                  textContentType="none"
+                  autoComplete="off"
+                  editable={!isLoading && !isAppleLoading && !isGoogleLoading}
                 />
                 {passwordError ? (
                   <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
@@ -350,9 +399,9 @@ export default function RegisterScreen() {
                   }}
                   onBlur={() => validateConfirmPassword(confirmPassword)}
                   secureTextEntry
-                  textContentType="newPassword"
-                  autoComplete="password-new"
-                  editable={!isLoading}
+                  textContentType="none"
+                  autoComplete="off"
+                  editable={!isLoading && !isAppleLoading && !isGoogleLoading}
                 />
                 {confirmPasswordError ? (
                   <ThemedText style={styles.errorText}>
@@ -371,10 +420,10 @@ export default function RegisterScreen() {
                 style={[
                   styles.registerButton,
                   { backgroundColor: Colors[colorScheme ?? 'light'].tint },
-                  isLoading && styles.buttonDisabled,
+                  (isLoading || isAppleLoading || isGoogleLoading) && styles.buttonDisabled,
                 ]}
                 onPress={handleRegister}
-                disabled={isLoading}
+                disabled={isLoading || isAppleLoading || isGoogleLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator color="white" />
@@ -390,7 +439,7 @@ export default function RegisterScreen() {
               <ThemedText style={styles.footerText}>
                 {t('auth.haveAccount')}
               </ThemedText>
-              <TouchableOpacity onPress={navigateToLogin} disabled={isLoading}>
+              <TouchableOpacity onPress={navigateToLogin} disabled={isLoading || isAppleLoading}>
                 <ThemedText
                   style={[
                     styles.linkText,
@@ -498,5 +547,31 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  socialAuthContainer: {
+    gap: 16,
+    marginBottom: 20,
+  },
+  appleButton: {
+    width: '100%',
+    height: 50,
+  },
+  googleButton: {
+    width: '100%',
+    height: 50,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    opacity: 0.3,
+  },
+  dividerText: {
+    fontSize: 14,
+    opacity: 0.6,
   },
 });

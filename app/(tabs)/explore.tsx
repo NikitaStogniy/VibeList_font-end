@@ -12,13 +12,13 @@ import type { User } from "@/types/api";
 import { router } from "expo-router";
 
 // User card wrapper with follow state
-const UserCardWithFollowState = memo(({
+const UserCardWithFollowState = memo(function UserCardWithFollowState({
   user,
   onPress,
 }: {
   user: User;
   onPress: (user: User) => void;
-}) => {
+}) {
   const { data: isFollowing = false } = useIsFollowingQuery(user.id);
   const [followUser] = useFollowUserMutation();
   const [unfollowUser] = useUnfollowUserMutation();

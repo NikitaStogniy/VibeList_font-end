@@ -9,16 +9,25 @@ import { useItemForm } from './use-item-form';
 import { MenuView } from './menu-view';
 import { PasteLinkView } from './paste-link-view';
 import { ManualEntryView } from './manual-entry-view';
+import { EditItemView } from './edit-item-view';
 import { IMAGE_PICKER_CONFIG } from './constants';
 import type { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
-import { useCreateItemMutation, useParseUrlMutation } from '@/store/api';
-import type { CreateItemRequest } from '@/types/api';
+import { useCreateItemMutation, useUpdateItemMutation } from '@/store/api';
+import type { CreateItemRequest, WishlistItem } from '@/types/api';
+import { uploadImage } from '@/utils/imageUpload';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
 
-type ViewMode = 'menu' | 'pasteLink' | 'manualEntry';
+type ViewMode = 'menu' | 'pasteLink' | 'manualEntry' | 'editItem';
 
 export function AddItemBottomSheet() {
   const { bottomSheetRef, closeAddItemSheet } = useBottomSheet();
   const { t } = useTranslation();
+  const token = useSelector((state: RootState) => state.auth.token);
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const {
     itemForm,
     linkForm,
@@ -27,16 +36,21 @@ export function AddItemBottomSheet() {
     updateLinkField,
     toggleCurrency,
     resetForm,
+    initializeFromItem,
     validateItemForm,
     validateLinkForm,
   } = useItemForm();
 
   const [viewMode, setViewMode] = useState<ViewMode>('menu');
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [partialItem, setPartialItem] = useState<Partial<WishlistItem> | null>(null);
   const [createItem, { isLoading: isCreating }] = useCreateItemMutation();
-  const [parseUrl, { isLoading: isParsing }] = useParseUrlMutation();
+  const [updateItem, { isLoading: isUpdating }] = useUpdateItemMutation();
 
   const handleClose = useCallback(() => {
     setViewMode('menu');
+    setWarnings([]);
+    setPartialItem(null);
     resetForm();
     closeAddItemSheet();
   }, [resetForm, closeAddItemSheet]);
@@ -89,25 +103,102 @@ export function AddItemBottomSheet() {
       }
 
       try {
-        // Parse URL to extract metadata
-        const result = await parseUrl({ url: linkForm.url }).unwrap();
-
-        // Create item with parsed data
+        // Create item directly from URL - backend will parse it
         const itemData: CreateItemRequest = {
-          name: result.name || 'Untitled Item',
-          description: result.description,
-          price: result.price,
-          currency: result.currency || 'usd',
           productUrl: linkForm.url,
-          imageUrl: result.imageUrl,
           isPublic: true,
         };
 
-        await createItem(itemData).unwrap();
-        Alert.alert(t('common.save'), t('addItem.submitSuccess'));
-        handleClose();
+        const result = await createItem(itemData).unwrap();
+
+        // Check if there are warnings (partial parsing)
+        if (result.warnings && result.warnings.length > 0) {
+          console.log('Partial parsing detected, warnings:', result.warnings);
+          setWarnings(result.warnings);
+          setPartialItem(result.item);
+
+          // Initialize form with parsed data
+          initializeFromItem(result.item);
+
+          // Switch to edit mode
+          setViewMode('editItem');
+
+          Alert.alert(
+            t('addItem.partialParsing'),
+            t('addItem.pleaseCompleteDetails')
+          );
+        } else {
+          // Successful creation without warnings
+          Alert.alert(t('common.success'), t('addItem.submitSuccess'));
+          handleClose();
+        }
       } catch (err: any) {
         console.error('Failed to create item from link:', err);
+
+        // Check if it's a timeout error
+        const errorMessage = err?.data?.message || '';
+        if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+          Alert.alert(
+            t('common.error'),
+            t('addItem.parsingTimeout')
+          );
+        } else if (errorMessage.includes('Invalid URL') || errorMessage.includes('valid URL')) {
+          Alert.alert(
+            t('common.error'),
+            t('addItem.invalidUrl')
+          );
+        } else {
+          Alert.alert(
+            t('common.error'),
+            errorMessage || t('addItem.submitFailed')
+          );
+        }
+      }
+    } else if (viewMode === 'editItem') {
+      // Handle editing partially parsed item
+      const error = validateItemForm();
+      if (error) {
+        Alert.alert(t('common.error'), t(error));
+        return;
+      }
+
+      if (!partialItem?.id) {
+        Alert.alert(t('common.error'), 'Item ID not found');
+        return;
+      }
+
+      try {
+        let uploadedImageUrl: string | undefined = partialItem.imageUrl;
+
+        // Upload new image if changed
+        if (itemForm.imageUri && itemForm.imageUri !== partialItem.imageUrl && token) {
+          try {
+            const uploadResult = await uploadImage(
+              { uri: itemForm.imageUri },
+              token
+            );
+
+            if (uploadResult.success && uploadResult.url) {
+              uploadedImageUrl = uploadResult.url;
+            }
+          } catch (uploadError) {
+            console.error('Image upload error:', uploadError);
+          }
+        }
+
+        const updateData = {
+          name: itemForm.name,
+          description: itemForm.description || undefined,
+          price: itemForm.price ? parseFloat(itemForm.price) : undefined,
+          currency: selectedCurrency,
+          imageUrl: uploadedImageUrl,
+        };
+
+        await updateItem({ itemId: partialItem.id, data: updateData }).unwrap();
+        Alert.alert(t('common.success'), t('addItem.submitSuccess'));
+        handleClose();
+      } catch (err: any) {
+        console.error('Failed to update item:', err);
         Alert.alert(
           t('common.error'),
           err?.data?.message || t('addItem.submitFailed')
@@ -121,15 +212,37 @@ export function AddItemBottomSheet() {
       }
 
       try {
+        let uploadedImageUrl: string | undefined = undefined;
+
+        // Upload image if present
+        if (itemForm.imageUri && token) {
+          try {
+            const uploadResult = await uploadImage(
+              {
+                uri: itemForm.imageUri,
+              },
+              token
+            );
+
+            if (uploadResult.success && uploadResult.url) {
+              uploadedImageUrl = uploadResult.url;
+            } else {
+              console.warn('Image upload failed:', uploadResult.error);
+              // Continue without image rather than failing completely
+            }
+          } catch (uploadError) {
+            console.error('Image upload error:', uploadError);
+            // Continue without image rather than failing completely
+          }
+        }
+
         const itemData: CreateItemRequest = {
           name: itemForm.name,
           description: itemForm.description || undefined,
           price: itemForm.price ? parseFloat(itemForm.price) : undefined,
           currency: selectedCurrency,
           productUrl: itemForm.link || undefined,
-          // Note: imageUri is local file path, would need upload to S3/CDN
-          // For now, skip image upload or implement separately
-          imageUrl: undefined,
+          imageUrl: uploadedImageUrl,
           isPublic: true,
         };
 
@@ -137,12 +250,12 @@ export function AddItemBottomSheet() {
         await createItem(itemData).unwrap();
         Alert.alert(t('common.save'), t('addItem.submitSuccess'));
         handleClose();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Failed to create item:', err);
-        Alert.alert(
-          t('common.error'),
-          err?.data?.message || t('addItem.submitFailed')
-        );
+        const errorMessage = err && typeof err === 'object' && 'data' in err
+          ? (err.data as { message?: string }).message || t('addItem.submitFailed')
+          : t('addItem.submitFailed');
+        Alert.alert(t('common.error'), errorMessage);
       }
     }
   }, [
@@ -152,10 +265,13 @@ export function AddItemBottomSheet() {
     linkForm.url,
     itemForm,
     selectedCurrency,
+    token,
+    partialItem,
     t,
     handleClose,
     createItem,
-    parseUrl,
+    updateItem,
+    initializeFromItem,
   ]);
 
   // Define snap points
@@ -182,8 +298,9 @@ export function AddItemBottomSheet() {
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       onClose={handleClose}
+      backgroundStyle={{ backgroundColor: colors.modalBackground }}
     >
-      <BottomSheetView style={styles.contentContainer}>
+      <BottomSheetView style={[styles.contentContainer, { backgroundColor: colors.modalBackground }]}>
         {viewMode === 'menu' && (
           <MenuView
             onSelectPasteLink={() => setViewMode('pasteLink')}
@@ -194,10 +311,34 @@ export function AddItemBottomSheet() {
         {viewMode === 'pasteLink' && (
           <PasteLinkView
             linkUrl={linkForm.url}
-            isSubmitting={isParsing || isCreating}
+            isSubmitting={isCreating}
             onLinkChange={(text) => updateLinkField('url', text)}
             onPasteFromClipboard={handlePasteFromClipboard}
             onBack={() => setViewMode('menu')}
+            onCancel={handleClose}
+            onSubmit={handleSubmit}
+          />
+        )}
+
+        {viewMode === 'editItem' && partialItem && (
+          <EditItemView
+            item={partialItem}
+            warnings={warnings}
+            itemName={itemForm.name}
+            itemDescription={itemForm.description}
+            itemPrice={itemForm.price}
+            itemLink={itemForm.link}
+            imageUri={itemForm.imageUri}
+            selectedCurrency={selectedCurrency}
+            isSubmitting={isUpdating}
+            onNameChange={(text) => updateItemField('name', text)}
+            onDescriptionChange={(text) => updateItemField('description', text)}
+            onPriceChange={(text) => updateItemField('price', text)}
+            onLinkChange={(text) => updateItemField('link', text)}
+            onToggleCurrency={toggleCurrency}
+            onUploadPhoto={handleUploadPhoto}
+            onRemovePhoto={handleRemovePhoto}
+            onBack={() => setViewMode('pasteLink')}
             onCancel={handleClose}
             onSubmit={handleSubmit}
           />

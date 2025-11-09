@@ -29,14 +29,14 @@ export function ThemedTextInput({
     { light: lightBorderColor, dark: darkBorderColor },
     'border'
   );
-  const backgroundColor = useThemeColor({ light: '#ffffff', dark: '#1a1a1a' }, 'background');
+  const backgroundColor = Colors[colorScheme ?? 'light'].backgroundSecondary;
   const themedPlaceholderColor = useThemeColor(
     { light: lightPlaceholderColor, dark: darkPlaceholderColor },
     'text'
   );
   const placeholderColor = lightPlaceholderColor || darkPlaceholderColor
     ? themedPlaceholderColor
-    : Colors[colorScheme ?? 'light'].tabIconDefault;
+    : Colors[colorScheme ?? 'light'].textSecondary;
 
   return (
     <TextInput

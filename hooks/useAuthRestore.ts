@@ -47,6 +47,7 @@ export function useAuthRestore() {
         if (!token || !userData) {
           console.log('[AuthRestore] No stored credentials found');
           await clearAuthData();
+          dispatch(clearCredentials());
           dispatch(setAuthLoading(false));
           return;
         }

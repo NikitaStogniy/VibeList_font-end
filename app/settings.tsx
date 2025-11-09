@@ -8,12 +8,12 @@ import {
   selectSettings,
   setEmailNotifications,
   setPushNotifications,
-  setTheme,
 } from "@/store/settings-slice";
-import { useLogoutMutation } from "@/store/api";
+import { useLogoutMutation, useRegisterDeviceTokenMutation, useUnregisterDeviceTokenMutation } from "@/store/api";
 import { router, Redirect } from "expo-router";
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +22,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useThemeTransition } from "@/contexts/theme-transition-context";
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { useState } from 'react';
+import { usePushNotifications } from '@/hooks/use-push-notifications';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
@@ -30,6 +35,11 @@ export default function SettingsScreen() {
   const settings = useAppSelector(selectSettings);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const { changeTheme } = useThemeTransition();
+  const [registerToken] = useRegisterDeviceTokenMutation();
+  const [unregisterToken] = useUnregisterDeviceTokenMutation();
+  const [isPushTogglingLoading, setIsPushTogglingLoading] = useState(false);
+  const { requestPermission, getAndRegisterToken } = usePushNotifications();
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -38,7 +48,7 @@ export default function SettingsScreen() {
 
   const languages = [
     { code: "en", name: "English", nativeName: "English" },
-    { code: "ru", name: "Russian", nativeName: "Русský" },
+    { code: "ru", name: "Russian", nativeName: "Русский" },
   ];
 
   const themes = [
@@ -52,7 +62,78 @@ export default function SettingsScreen() {
   };
 
   const handleThemeChange = (theme: "light" | "dark" | "auto") => {
-    dispatch(setTheme(theme));
+    changeTheme(theme);
+  };
+
+  const handlePushNotificationToggle = async (value: boolean) => {
+    setIsPushTogglingLoading(true);
+
+    try {
+      if (value) {
+        // Enabling push notifications
+        // Check if running on physical device
+        if (!Device.isDevice) {
+          Alert.alert(
+            t('settings.notifications.error'),
+            'Push notifications only work on physical devices',
+            [{ text: 'OK' }]
+          );
+          setIsPushTogglingLoading(false);
+          return;
+        }
+
+        // Request permission
+        const hasPermission = await requestPermission();
+        if (!hasPermission) {
+          Alert.alert(
+            t('settings.notifications.permissionDenied'),
+            t('settings.notifications.permissionDeniedMessage'),
+            [{ text: 'OK' }]
+          );
+          setIsPushTogglingLoading(false);
+          return;
+        }
+
+        // Get and register token with backend
+        await getAndRegisterToken();
+
+        // Update local state
+        dispatch(setPushNotifications(true));
+
+        console.log('[Settings] Push notifications enabled');
+      } else {
+        // Disabling push notifications
+        if (!Device.isDevice) {
+          console.log('[Settings] Not a physical device, skipping token unregistration');
+          dispatch(setPushNotifications(false));
+          setIsPushTogglingLoading(false);
+          return;
+        }
+
+        // Get current Expo Push Token
+        const tokenData = await Notifications.getExpoPushTokenAsync({
+          projectId: 'your-project-id', // Replace with your Expo project ID
+        });
+        const token = tokenData.data;
+
+        // Unregister from backend
+        await unregisterToken(token).unwrap();
+
+        // Update local state
+        dispatch(setPushNotifications(false));
+
+        console.log('[Settings] Push notifications disabled');
+      }
+    } catch (error) {
+      console.error('[Settings] Error toggling push notifications:', error);
+      Alert.alert(
+        t('settings.notifications.error'),
+        t('settings.notifications.errorMessage'),
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsPushTogglingLoading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -200,14 +281,14 @@ export default function SettingsScreen() {
               </View>
               <Switch
                 value={settings.pushNotifications}
-                onValueChange={(value) => {
-                  dispatch(setPushNotifications(value));
-                }}
+                onValueChange={handlePushNotificationToggle}
+                disabled={isPushTogglingLoading}
                 trackColor={{
                   false: Colors[colorScheme ?? "light"].tabIconDefault,
                   true: Colors[colorScheme ?? "light"].tint,
                 }}
-                thumbColor="#fff"
+                thumbColor={colorScheme === "dark" ? "#f4f4f4" : "#fff"}
+                ios_backgroundColor={Colors[colorScheme ?? "light"].borderLight}
               />
             </ThemedView>
 
@@ -229,7 +310,8 @@ export default function SettingsScreen() {
                   false: Colors[colorScheme ?? "light"].tabIconDefault,
                   true: Colors[colorScheme ?? "light"].tint,
                 }}
-                thumbColor="#fff"
+                thumbColor={colorScheme === "dark" ? "#f4f4f4" : "#fff"}
+                ios_backgroundColor={Colors[colorScheme ?? "light"].borderLight}
               />
             </ThemedView>
           </ThemedView>
@@ -256,6 +338,7 @@ export default function SettingsScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.logoutButton,
+                { backgroundColor: Colors[colorScheme ?? "light"].error },
                 pressed && styles.logoutButtonPressed,
               ]}
               onPress={handleLogout}
@@ -344,7 +427,6 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 16,
-    backgroundColor: "#ff3b30",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -353,7 +435,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   logoutButtonText: {
-    color: "#ffffff",
+    color: "#fff",
     fontSize: 16,
   },
 });

@@ -70,6 +70,7 @@
     "reserve": "Reserve",
     "unreserve": "Unreserve",
     "reserved": "Reserved",
+    "ownItem": "It's your item",
     "alreadyReserved": "Item already reserved",
     "reserveSuccess": "Item reserved successfully!",
     "unreserveSuccess": "Item unreserved successfully!",
@@ -120,6 +121,7 @@
     "title": "Add Wishlist Item",
     "pasteLink": "Paste Link",
     "manualEntry": "Manual Entry",
+    "editItem": "Complete Details",
     "pasteFromClipboard": "Paste from Clipboard",
     "uploadPhoto": "Upload Photo",
     "changePhoto": "Change Photo",
@@ -146,6 +148,16 @@
     "nameRequired": "Please enter item name",
     "submitSuccess": "Item added successfully!",
     "submitFailed": "Failed to add item. Please try again.",
+    "parsingUrl": "Parsing product URL...",
+    "parsingHint": "This may take up to 30 seconds",
+    "parsingTimeout": "Parsing took too long. Please try entering details manually.",
+    "invalidUrl": "Please enter a valid product URL",
+    "partialParsing": "Some Details Missing",
+    "pleaseCompleteDetails": "We couldn't find all product details. Please complete the missing fields.",
+    "missingFields": "Missing fields",
+    "required": "Required",
+    "optional": "Optional",
+    "priceMonitoringHint": "Add price to enable price drop notifications for your followers",
     "currencies": {
       "rub": "RUB",
       "usd": "USD",
@@ -156,7 +168,10 @@
     "title": "Notifications",
     "markAllAsRead": "Mark all as read",
     "emptyStateTitle": "No notifications yet",
-    "emptyStateMessage": "When someone reserves your items or follows you, you'll see it here!"
+    "emptyStateMessage": "When someone reserves your items or follows you, you'll see it here!",
+    "priceDrop": "Price Drop!",
+    "priceDropMessage": "{{itemName}} is now {{discount}}% cheaper!",
+    "viewItem": "View Item"
   },
   "profile": {
     "title": "Profile",
@@ -208,7 +223,9 @@
     "network": "Network error. Please check your connection.",
     "unauthorized": "You need to be logged in to perform this action",
     "notFound": "Not found",
-    "reservationFailed": "Failed to toggle reservation"
+    "reservationFailed": "Failed to toggle reservation",
+    "somethingWentWrong": "Oops! Something went wrong",
+    "errorBoundaryMessage": "We're sorry for the inconvenience. The app encountered an unexpected error."
   },
   "actions": {
     "add": "Add",
@@ -216,6 +233,9 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "submit": "Submit"
+    "submit": "Submit",
+    "tryAgain": "Try Again",
+    "reloadPage": "Reload Page",
+    "resetApp": "Reset App"
   }
 }

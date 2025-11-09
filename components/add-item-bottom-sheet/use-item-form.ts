@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
+import type { WishlistItem } from '@/types/api';
 
 export type Currency = 'rub' | 'usd' | 'eur';
 
@@ -81,6 +82,31 @@ export function useItemForm() {
     setCurrencyIndex(0);
   }, []);
 
+  const initializeFromItem = useCallback((item: Partial<WishlistItem>) => {
+    setItemForm({
+      name: item.name || '',
+      description: item.description || '',
+      price: item.price ? item.price.toString() : '',
+      currency: (item.currency?.toLowerCase() as Currency) || 'usd',
+      link: item.productUrl || '',
+      imageUri: item.imageUrl || '',
+    });
+
+    // Set currency index based on item currency
+    if (item.currency) {
+      const itemCurrency = item.currency.toLowerCase() as Currency;
+      const index = currencies.findIndex(c => c === itemCurrency);
+      if (index !== -1) {
+        setCurrencyIndex(index);
+      }
+    }
+
+    // Set link form if productUrl exists
+    if (item.productUrl) {
+      setLinkForm({ url: item.productUrl });
+    }
+  }, [currencies]);
+
   const validateItemForm = useCallback((): string | null => {
     if (!itemForm.name.trim()) {
       return 'addItem.nameRequired';
@@ -103,6 +129,7 @@ export function useItemForm() {
     updateLinkField,
     toggleCurrency,
     resetForm,
+    initializeFromItem,
     validateItemForm,
     validateLinkForm,
   };

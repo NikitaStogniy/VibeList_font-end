@@ -8,24 +8,56 @@ import { DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultThem
 import type { Theme } from '@react-navigation/native';
 
 const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintColorDark = '#4A9FD8';
 
 export const Colors = {
   light: {
     text: '#11181C',
+    textSecondary: '#687076',
     background: '#fff',
+    backgroundSecondary: '#f8f9fa',
+    backgroundTertiary: '#e9ecef',
+    modalBackground: '#f5f5f5', // Немного темнее для модальных окон
     tint: tintColorLight,
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    border: '#E5E5E7',
+    borderLight: '#f0f0f0',
+    card: '#fff',
+    success: '#4CAF50',
+    warning: '#FF9800',
+    error: '#FF6B6B',
+    reserved: '#FF6B6B',
+    link: '#0a7ea4',
+    // Badge colors
+    badge: '#f0f0f0',
+    badgeText: '#666',
+    ownItemBorder: '#888',
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
+    textSecondary: '#9BA1A6',
+    background: '#000000',
+    backgroundSecondary: '#1C1C1E',
+    backgroundTertiary: '#2C2C2E',
+    modalBackground: '#1a1a1a', // Немного светлее для модальных окон
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    border: '#38383A',
+    borderLight: '#2C2C2E',
+    card: '#1C1C1E',
+    success: '#4CAF50',
+    warning: '#FF9800',
+    error: '#FF6B6B',
+    reserved: '#FF6B6B',
+    link: '#4A9FD8',
+    // Badge colors
+    badge: '#2C2C2E',
+    badgeText: '#9BA1A6',
+    ownItemBorder: '#636366',
   },
 };
 
@@ -36,9 +68,9 @@ export const LightTheme: Theme = {
     ...NavigationDefaultTheme.colors,
     primary: Colors.light.tint,
     background: Colors.light.background,
-    card: Colors.light.background,
+    card: Colors.light.card,
     text: Colors.light.text,
-    border: '#E5E5E7',
+    border: Colors.light.border,
     notification: Colors.light.tint,
   },
 };
@@ -49,9 +81,9 @@ export const DarkTheme: Theme = {
     ...NavigationDarkTheme.colors,
     primary: Colors.dark.tint,
     background: Colors.dark.background,
-    card: Colors.dark.background,
+    card: Colors.dark.card,
     text: Colors.dark.text,
-    border: '#272729',
+    border: Colors.dark.border,
     notification: Colors.dark.tint,
   },
 };
