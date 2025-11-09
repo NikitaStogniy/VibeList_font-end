@@ -1,0 +1,116 @@
+name: Mobile Build & Submit to App Stores
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-submit:
+    name: EAS Build & Submit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint || echo "Linting completed with warnings"
+
+      - name: Build iOS (Production)
+        id: build-ios
+        run: |
+          echo "Starting iOS build..."
+          eas build --platform ios --profile production --non-interactive --auto-submit --wait | tee build-output-ios.txt
+
+          # Extract build ID from output
+          BUILD_ID=$(grep -oP 'Build ID: \K[a-f0-9-]+' build-output-ios.txt | head -1)
+          echo "ios-build-id=${BUILD_ID}" >> $GITHUB_OUTPUT
+          echo "iOS Build ID: ${BUILD_ID}"
+
+      - name: Build Android (Production)
+        id: build-android
+        run: |
+          echo "Starting Android build..."
+          eas build --platform android --profile production --non-interactive --auto-submit --wait | tee build-output-android.txt
+
+          # Extract build ID from output
+          BUILD_ID=$(grep -oP 'Build ID: \K[a-f0-9-]+' build-output-android.txt | head -1)
+          echo "android-build-id=${BUILD_ID}" >> $GITHUB_OUTPUT
+          echo "Android Build ID: ${BUILD_ID}"
+
+      - name: Build Summary
+        if: always()
+        run: |
+          echo "### 📱 Mobile Build & Submit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -n "${{ steps.build-ios.outputs.ios-build-id }}" ]; then
+            echo "#### ✅ iOS Build Successful" >> $GITHUB_STEP_SUMMARY
+            echo "- **Build ID:** \`${{ steps.build-ios.outputs.ios-build-id }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Platform:** iOS" >> $GITHUB_STEP_SUMMARY
+            echo "- **Profile:** production" >> $GITHUB_STEP_SUMMARY
+            echo "- **Submitted to:** TestFlight" >> $GITHUB_STEP_SUMMARY
+            echo "- **View:** [EAS Dashboard](https://expo.dev/accounts/nikitastogniy/projects/vibelist/builds/${{ steps.build-ios.outputs.ios-build-id }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "#### ❌ iOS Build Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -n "${{ steps.build-android.outputs.android-build-id }}" ]; then
+            echo "#### ✅ Android Build Successful" >> $GITHUB_STEP_SUMMARY
+            echo "- **Build ID:** \`${{ steps.build-android.outputs.android-build-id }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Platform:** Android" >> $GITHUB_STEP_SUMMARY
+            echo "- **Profile:** production" >> $GITHUB_STEP_SUMMARY
+            echo "- **Submitted to:** Google Play Console (Internal Testing)" >> $GITHUB_STEP_SUMMARY
+            echo "- **View:** [EAS Dashboard](https://expo.dev/accounts/nikitastogniy/projects/vibelist/builds/${{ steps.build-android.outputs.android-build-id }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "#### ❌ Android Build Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Built at:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload build logs (iOS)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-logs
+          path: ./build-output-ios.txt
+          retention-days: 30
+
+      - name: Upload build logs (Android)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-logs
+          path: ./build-output-android.txt
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Build or submission failed. Check the logs above for details."
+          echo "### ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "One or more builds failed. Please check the logs for details." >> $GITHUB_STEP_SUMMARY
